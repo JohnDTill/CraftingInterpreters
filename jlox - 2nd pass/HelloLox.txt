@@ -1,0 +1,45 @@
+print "Hello Lox!";
+
+fun makePoint(x, y) {
+  fun closure(method) {
+    if (method == "x") return x;
+    if (method == "y") return y;
+    print "unknown method " + method;
+  }
+
+  return closure;
+}
+
+var point = makePoint(2, 3);
+print point("x"); // "2".
+print point("y"); // "3".
+
+class DevonshireCream {
+  serveOn() {
+    return "Scones";
+  }
+}
+
+print DevonshireCream; // Prints "DevonshireCream".
+
+class Bagel {}
+var bagel = Bagel();
+print bagel; // Prints "Bagel instance".
+
+class Bacon {
+  eat() {
+    print "Chewy bacon!";
+  }
+}
+
+Bacon().eat(); // Prints "Chewy bacon!".
+
+class Doughnut {
+  cook() {
+    print "Fry until golden brown.";
+  }
+}
+
+class BostonCream < Doughnut {}
+
+BostonCream().cook();

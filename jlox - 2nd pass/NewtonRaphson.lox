@@ -1,0 +1,14 @@
+fun NewtonRaphson(f,x,tol,incr){
+	var E = f(x);
+	
+	while( E > tol  or  E < -tol ){
+		var J = (f(x+incr) - E)/incr;
+		x = x - E/J;
+		E = f(x);
+	}
+	
+	return x;
+}
+
+fun f(x){ return x*x*x - 3*x - 2; }
+print NewtonRaphson(f,0.5,0.000001,0.000000001);
