@@ -106,6 +106,8 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
 		memcmp(scanner.start + start, rest, length) ==0){
 		return type;	
 	}
+	
+	return TOKEN_IDENTIFIER;
 }
 
 static TokenType identifierType(){
