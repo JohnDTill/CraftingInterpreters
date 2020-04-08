@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="37cm" height="19cm" viewBox="45 145 740 365" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="46.375" y="293" width="114.25" height="53"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="46.375" y="293" width="114.25" height="53"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="103.5" y="323.4">
+      <tspan x="103.5" y="323.4">Chunk (Struct)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="279.7" y="206" width="158.6" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="279.7" y="206" width="158.6" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="359" y="228.4">
+      <tspan x="359" y="228.4">code (dynamic array)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="278.126" y="264" width="211.75" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="278.126" y="264" width="211.75" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="384.001" y="286.4">
+      <tspan x="384.001" y="286.4">capacity (code allocated size)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="276.1" y="328" width="165.8" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="276.1" y="328" width="165.8" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="359" y="350.4">
+      <tspan x="359" y="350.4">count (code used size)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="158.95" y1="292.515" x2="277.689" y2="234.728"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="271.891,243.111 278.695,234.239 267.515,234.119 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="160.97" y1="307.323" x2="275.938" y2="282.963"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="268.286,289.696 277.032,282.732 266.213,279.913 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="161.13" y1="328.515" x2="273.891" y2="346.154"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="264.343,349.722 274.995,346.327 265.888,339.842 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="357.074" y="416" width="135.85" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="357.074" y="416" width="135.85" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="424.999" y="438.4">
+      <tspan x="424.999" y="438.4">constants (Struct)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="161.105" y1="343.524" x2="355.01" y2="424.389"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="344.888,425.585 356.042,424.82 348.737,416.356 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="574.05" y="357.8" width="169.3" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="574.05" y="357.8" width="169.3" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="658.7" y="380.2">
+      <tspan x="658.7" y="380.2">values (dynamic array)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="492.924" y1="416" x2="572.042" y2="377.283"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="566.261,385.678 573.046,376.791 561.866,376.696 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="562.626" y="413.338" width="222.45" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="562.626" y="413.338" width="222.45" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="673.851" y="435.738">
+      <tspan x="673.851" y="435.738">capacity (values allocated size)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="566.6" y="472.338" width="176.5" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="566.6" y="472.338" width="176.5" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="654.85" y="494.738">
+      <tspan x="654.85" y="494.738">count (values used size)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="493.424" y1="433.768" x2="559.917" y2="433.057"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="551.089,438.151 561.035,433.045 550.982,428.152 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="492.924" y1="443.75" x2="564.611" y2="480.566"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="554.426,480.956 565.605,481.077 558.994,472.061 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="279.225" y="146.05" width="350.95" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="279.225" y="146.05" width="350.95" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="454.7" y="168.45">
+      <tspan x="454.7" y="168.45">lines (dynamic array of line numbers, mirrors code)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="138.272" y1="292.5" x2="277.459" y2="184.421"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="273.51,193.818 278.342,183.736 267.377,185.92 "/>
+  </g>
+</svg>
