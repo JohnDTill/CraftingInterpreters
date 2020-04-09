@@ -3,3 +3,4 @@
 *build*
 *.pro.user
 *.dia~
+*.autosave

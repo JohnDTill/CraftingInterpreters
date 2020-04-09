@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="19cm" height="10cm" viewBox="212 254 362 181" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="213.05" y="334" width="91.9" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="213.05" y="334" width="91.9" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="259" y="356.4">
+      <tspan x="259" y="356.4">VM (struct)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="389.125" y="255" width="59.75" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="389.125" y="255" width="59.75" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="419" y="277.4">
+      <tspan x="419" y="277.4">chunk</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="297.477" y1="333.502" x2="386.643" y2="289.476"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="380.893,297.892 387.646,288.981 376.466,288.925 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="388.875" y="301" width="104.25" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="388.875" y="301" width="104.25" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="441" y="323.4">
+      <tspan x="441" y="323.4">ip (OpCode*)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="305.444" y1="344.079" x2="386.179" y2="329.44"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="378.332,335.944 387.279,329.241 376.548,326.105 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="388.1" y="350" width="185.8" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="388.1" y="350" width="185.8" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="481" y="372.4">
+      <tspan x="481" y="372.4">stack (Value[STACKMAX])</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="305.456" y1="355.848" x2="385.371" y2="361.608"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="376.152,365.956 386.486,361.688 376.871,355.982 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="388.325" y="397" width="135.35" height="37"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="388.325" y="397" width="135.35" height="37"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="456" y="419.4">
+      <tspan x="456" y="419.4">stackTop (Value*)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="304.592" y1="371.449" x2="386.26" y2="405.392"/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="376.139,406.6 387.293,405.821 379.977,397.366 "/>
+  </g>
+</svg>

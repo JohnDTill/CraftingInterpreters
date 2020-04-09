@@ -8,11 +8,13 @@ SOURCES += \
         debug.c \
         main.c \
         memory.c \
-        value.c
+        value.c \
+        vm.c
 
 HEADERS += \
     chunk.h \
     common.h \
     debug.h \
     memory.h \
-    value.h
+    value.h \
+    vm.h

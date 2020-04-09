@@ -5,8 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define DEBUG_TRACE_EXECUTION
+
 typedef unsigned ChunkIndex;
-typedef unsigned LineValue;
+typedef unsigned LineNumber;
 typedef uint8_t ChunkItem;
 
 #endif

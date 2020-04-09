@@ -18,7 +18,7 @@ void freeChunk(Chunk* chunk) {
     initChunk(chunk);
 }
 
-void pushBackChunk(Chunk* chunk, ChunkItem byte, LineValue line) {
+void pushBackChunk(Chunk* chunk, ChunkItem byte, LineNumber line) {
     if (chunk->capacity < chunk->count + 1) {
         ChunkIndex oldCapacity = chunk->capacity;
         chunk->capacity = GROW_CAPACITY(oldCapacity);
