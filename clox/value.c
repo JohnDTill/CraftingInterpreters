@@ -3,6 +3,17 @@
 #include "memory.h"
 #include "value.h"
 
+bool valuesEqual(Value a, Value b) {
+    if (a.type != b.type) return false;
+
+    switch (a.type) {
+        case VAL_BOOL:   return READ_VALUE_UNION_AS_BOOL(a) == READ_VALUE_UNION_AS_BOOL(b);
+        case VAL_NIL:    return true;
+        case VAL_NUMBER: return READ_VALUE_UNION_AS_NUMBER(a) == READ_VALUE_UNION_AS_NUMBER(b);
+        //Floating-point equality is dubious, and Lox only supports double numbers, but it is a toy language!
+    }
+}
+
 void initValueArray(ValueArray* array) {
     array->values = NULL;
     array->capacity = 0;
@@ -26,5 +37,9 @@ void freeValueArray(ValueArray* array) {
 }
 
 void printValue(Value value) {
-    printf("%g", value);
+    switch (value.type) {
+        case VAL_BOOL:   printf(READ_VALUE_UNION_AS_BOOL(value) ? "true" : "false"); break;
+        case VAL_NIL:    printf("nil"); break;
+        case VAL_NUMBER: printf("%g", READ_VALUE_UNION_AS_NUMBER(value)); break;
+    }
 }

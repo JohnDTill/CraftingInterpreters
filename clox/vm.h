@@ -24,5 +24,7 @@ void freeVM(void);
 InterpretResult interpret(const char* source);
 void pushStack(Value value);
 Value popStack(void);
+Value peekStack(int distance);
+bool isFalsey(Value value);
 
 #endif
