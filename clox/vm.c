@@ -1,12 +1,15 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "object.h"
+#include "memory.h"
 #include "vm.h"
 
-static VM vm;
+VM vm;
 
 static void resetStack() {
     vm.stackTop = vm.stack;
@@ -28,9 +31,25 @@ static void runtimeError(const char* format, ...) {
 
 void initVM() {
     resetStack();
+    vm.objects = NULL;
 }
 
 void freeVM() {
+    freeObjects();
+}
+
+static void concatenate() {
+    HeapObjString* b = READ_VALUE_AS_STRING(popStack());
+    HeapObjString* a = READ_VALUE_AS_STRING(popStack());
+
+    int length = a->length + b->length;
+    char* chars = ALLOCATE(char, (unsigned)length + 1);
+    memcpy(chars, a->chars, (unsigned)a->length);
+    memcpy(chars + a->length, b->chars, (unsigned)b->length);
+    chars[length] = '\0';
+
+    HeapObjString* result = takeString(chars, length);
+    pushStack(CREATE_HEAP_OBJ_VAL(result));
 }
 
 static InterpretResult run() {
@@ -81,7 +100,19 @@ static InterpretResult run() {
 
             case OP_GREATER:  BINARY_OP(CREATE_BOOL_VAL, >); break;
             case OP_LESS:     BINARY_OP(CREATE_BOOL_VAL, <); break;
-            case OP_ADD:      BINARY_OP(CREATE_NUMBER_VAL, +); break;
+            case OP_ADD: {
+                if (HEAP_OBJ_IS_STRING(peekStack(0)) && HEAP_OBJ_IS_STRING(peekStack(1))) {
+                    concatenate();
+                } else if (VALUE_TYPE_IS_NUMBER(peekStack(0)) && VALUE_TYPE_IS_NUMBER(peekStack(1))) {
+                    double b = READ_VALUE_UNION_AS_NUMBER(popStack());
+                    double a = READ_VALUE_UNION_AS_NUMBER(popStack());
+                    pushStack(CREATE_NUMBER_VAL(a + b));
+                } else {
+                    runtimeError("Operands must be two numbers or two strings.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
             case OP_SUBTRACT: BINARY_OP(CREATE_NUMBER_VAL, -); break;
             case OP_MULTIPLY: BINARY_OP(CREATE_NUMBER_VAL, *); break;
             case OP_DIVIDE:   BINARY_OP(CREATE_NUMBER_VAL, /); break;

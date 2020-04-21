@@ -9,6 +9,7 @@ SOURCES += \
         debug.c \
         main.c \
         memory.c \
+        object.c \
         scanner.c \
         value.c \
         vm.c
@@ -19,6 +20,7 @@ HEADERS += \
     compiler.h \
     debug.h \
     memory.h \
+    object.h \
     scanner.h \
     value.h \
     vm.h

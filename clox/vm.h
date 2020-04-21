@@ -11,6 +11,8 @@ typedef struct {
     ChunkItem* ip; //Points to next instruction to be executed
     Value stack[STACK_MAX];
     Value* stackTop; //Address past last element
+
+    HeapObj* objects; //Pointer to head of linked list for memory management
 } VM;
 
 typedef enum {
@@ -18,6 +20,8 @@ typedef enum {
     INTERPRET_COMPILE_ERROR,
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
+extern VM vm;
 
 void initVM(void);
 void freeVM(void);
