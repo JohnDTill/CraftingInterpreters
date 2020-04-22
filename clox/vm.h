@@ -2,6 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
+#include "hashtable.h"
 #include "value.h"
 
 #define STACK_MAX 256
@@ -11,6 +12,7 @@ typedef struct {
     ChunkItem* ip; //Points to next instruction to be executed
     Value stack[STACK_MAX];
     Value* stackTop; //Address past last element
+    HashTable interned_strings;
 
     HeapObj* objects; //Pointer to head of linked list for memory management
 } VM;

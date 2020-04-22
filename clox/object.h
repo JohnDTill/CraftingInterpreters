@@ -22,12 +22,13 @@ struct sHeapObj {
 
 struct sHeapObjString {
     HeapObj obj;
-    int length;
+    unsigned length;
     char* chars;
+    uint32_t hash;
 };
 
-HeapObjString* takeString(char* chars, int length);
-HeapObjString* copyString(const char* chars, int length);
+HeapObjString* takeString(char* chars, unsigned length);
+HeapObjString* copyString(const char* chars, unsigned length);
 
 void printObject(Value value);
 

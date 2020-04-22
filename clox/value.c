@@ -13,12 +13,7 @@ bool valuesEqual(Value a, Value b) {
         case VAL_NIL:    return true;
         case VAL_NUMBER: return READ_VALUE_UNION_AS_NUMBER(a) == READ_VALUE_UNION_AS_NUMBER(b);
         //Floating-point equality is dubious, and Lox only supports double numbers, but it is a toy language!
-        case VAL_HEAP_OBJ: {
-            HeapObjString* aString = READ_VALUE_AS_STRING(a);
-            HeapObjString* bString = READ_VALUE_AS_STRING(b);
-            return aString->length == bString->length &&
-            memcmp(aString->chars, bString->chars, (unsigned)aString->length) == 0;
-        }
+        case VAL_HEAP_OBJ:    return READ_VALUE_UNION_AS_HEAP_OBJ(a) == READ_VALUE_UNION_AS_HEAP_OBJ(b);
     }
 }
 

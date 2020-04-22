@@ -7,6 +7,7 @@ SOURCES += \
         chunk.c \
         compiler.c \
         debug.c \
+        hashtable.c \
         main.c \
         memory.c \
         object.c \
@@ -19,6 +20,7 @@ HEADERS += \
     common.h \
     compiler.h \
     debug.h \
+    hashtable.h \
     memory.h \
     object.h \
     scanner.h \

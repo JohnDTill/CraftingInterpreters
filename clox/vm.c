@@ -32,9 +32,11 @@ static void runtimeError(const char* format, ...) {
 void initVM() {
     resetStack();
     vm.objects = NULL;
+    initTable(&vm.interned_strings);
 }
 
 void freeVM() {
+    freeTable(&vm.interned_strings);
     freeObjects();
 }
 
@@ -42,7 +44,7 @@ static void concatenate() {
     HeapObjString* b = READ_VALUE_AS_STRING(popStack());
     HeapObjString* a = READ_VALUE_AS_STRING(popStack());
 
-    int length = a->length + b->length;
+    unsigned length = a->length + b->length;
     char* chars = ALLOCATE(char, (unsigned)length + 1);
     memcpy(chars, a->chars, (unsigned)a->length);
     memcpy(chars + a->length, b->chars, (unsigned)b->length);

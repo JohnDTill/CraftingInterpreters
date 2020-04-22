@@ -178,7 +178,7 @@ static void number(void) {
 
 static void string() {
     emitConstant(CREATE_HEAP_OBJ_VAL(copyString(parser.previous.start + 1,
-                                     parser.previous.length - 2)));
+                                                (unsigned)parser.previous.length - 2)));
 }
 
 static void unary(void) {
