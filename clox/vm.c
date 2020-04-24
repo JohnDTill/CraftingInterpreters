@@ -32,10 +32,12 @@ static void runtimeError(const char* format, ...) {
 void initVM() {
     resetStack();
     vm.objects = NULL;
+    initTable(&vm.globals);
     initTable(&vm.interned_strings);
 }
 
 void freeVM() {
+    freeTable(&vm.globals);
     freeTable(&vm.interned_strings);
     freeObjects();
 }
@@ -57,6 +59,7 @@ static void concatenate() {
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+#define READ_STRING() READ_VALUE_AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
     do { \
@@ -93,10 +96,40 @@ static InterpretResult run() {
             case OP_TRUE: pushStack(CREATE_BOOL_VAL(true)); break;
             case OP_FALSE: pushStack(CREATE_BOOL_VAL(false)); break;
 
+            case OP_SET_GLOBAL: {
+                HeapObjString* name = READ_STRING();
+                if (tableSet(&vm.globals, name, peekStack(0))) {
+                    tableDelete(&vm.globals, name);
+                    runtimeError("Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+
             case OP_EQUAL: {
                 Value b = popStack();
                 Value a = popStack();
                 pushStack(CREATE_BOOL_VAL(valuesEqual(a, b)));
+                break;
+            }
+
+            case OP_POP: popStack(); break;
+
+            case OP_GET_GLOBAL: {
+                HeapObjString* name = READ_STRING();
+                Value value;
+                if (!tableGet(&vm.globals, name, &value)) {
+                    runtimeError("Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                pushStack(value);
+                break;
+            }
+
+            case OP_DEFINE_GLOBAL: {
+                HeapObjString* name = READ_STRING();
+                tableSet(&vm.globals, name, peekStack(0));
+                popStack();
                 break;
             }
 
@@ -122,17 +155,20 @@ static InterpretResult run() {
                     pushStack(CREATE_BOOL_VAL(isFalsey(popStack())));
                     break;
             case OP_NEGATE:
-                    if (!VALUE_TYPE_IS_NUMBER(peekStack(0))) {
-                        runtimeError("Operand must be a number.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
+                if (!VALUE_TYPE_IS_NUMBER(peekStack(0))) {
+                    runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
 
-                    //This has more indirection than necessary since stack entries are immutable
-                    pushStack(CREATE_NUMBER_VAL(-READ_VALUE_UNION_AS_NUMBER(popStack())));
-                    break;
-            case OP_RETURN: {
+                //This has more indirection than necessary since stack entries are immutable
+                pushStack(CREATE_NUMBER_VAL(-READ_VALUE_UNION_AS_NUMBER(popStack())));
+                break;
+            case OP_PRINT: {
                 printValue(popStack());
                 printf("\n");
+                break;
+            }
+            case OP_RETURN: {
                 return INTERPRET_OK;
             }
         }
@@ -140,6 +176,7 @@ static InterpretResult run() {
 
 #undef READ_BYTE
 #undef READ_CONSTANT
+#undef READ_STRING
 #undef BINARY_OP
 }
 

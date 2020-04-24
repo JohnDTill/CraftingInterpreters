@@ -12,6 +12,7 @@ typedef struct {
     ChunkItem* ip; //Points to next instruction to be executed
     Value stack[STACK_MAX];
     Value* stackTop; //Address past last element
+    HashTable globals;
     HashTable interned_strings;
 
     HeapObj* objects; //Pointer to head of linked list for memory management
