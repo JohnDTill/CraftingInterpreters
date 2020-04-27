@@ -115,6 +115,18 @@ static InterpretResult run() {
 
             case OP_POP: popStack(); break;
 
+            case OP_GET_LOCAL: {
+                uint8_t slot = READ_BYTE();
+                pushStack(vm.stack[slot]);
+                break;
+            }
+
+            case OP_SET_LOCAL: {
+                uint8_t slot = READ_BYTE();
+                vm.stack[slot] = peekStack(0);
+                break;
+            }
+
             case OP_GET_GLOBAL: {
                 HeapObjString* name = READ_STRING();
                 Value value;
