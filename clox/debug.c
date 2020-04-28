@@ -21,15 +21,22 @@ static ChunkIndex constantInstruction(const char* name, Chunk* chunk, ChunkIndex
     return offset + 2;
 }
 
-static unsigned simpleInstruction(const char* name, ChunkIndex offset) {
+static ChunkIndex simpleInstruction(const char* name, ChunkIndex offset) {
     printf("%s\n", name);
     return offset + 1;
 }
 
-static int byteInstruction(const char* name, Chunk* chunk, int offset) {
+static ChunkIndex byteInstruction(const char* name, Chunk* chunk, ChunkIndex offset) {
     uint8_t slot = chunk->code[offset + 1];
     printf("%-16s StackIndex: %d\n", name, slot);
     return offset + 2;
+}
+
+static ChunkIndex jumpInstruction(const char* name, int sign, Chunk* chunk, ChunkIndex offset) {
+    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    jump |= chunk->code[offset + 2];
+    printf("%-16s Jump: %d -> %d\n", name, offset, (int)offset + 3 + sign * jump);
+    return offset + 3;
 }
 
 ChunkIndex disassembleInstruction(Chunk* chunk, ChunkIndex offset) {
@@ -82,6 +89,12 @@ ChunkIndex disassembleInstruction(Chunk* chunk, ChunkIndex offset) {
             return simpleInstruction("OP_NEGATE", offset);
         case OP_PRINT:
             return simpleInstruction("OP_PRINT", offset);
+        case OP_JUMP:
+            return jumpInstruction("OP_JUMP", 1, chunk, offset);
+        case OP_JUMP_IF_FALSE:
+            return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+        case OP_LOOP:
+            return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
         default:
