@@ -61,10 +61,13 @@ static void runFile(const char* path) {
 int main(int argc, const char* argv[]){
     initVM();
 
+    argc = 2;
+
     if (argc == 1) {
         repl();
     } else if (argc == 2) {
-        runFile(argv[1]);
+        //runFile(argv[1]);
+        runFile("test.txt");
     } else {
         fprintf(stderr, "Usage: clox [path]\n");
         exit(64);

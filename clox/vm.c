@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -11,8 +12,13 @@
 
 VM vm;
 
+static Value clockNative(int argCount, Value* args) {
+    return CREATE_NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
+
 static void resetStack() {
     vm.stackTop = vm.stack;
+    vm.frameCount = 0;
 }
 
 static void runtimeError(const char* format, ...) {
@@ -22,11 +28,30 @@ static void runtimeError(const char* format, ...) {
     va_end(args);
     fputs("\n", stderr);
 
-    ChunkIndex instruction = (unsigned)(vm.ip - vm.chunk->code) - 1;
-    LineNumber line = vm.chunk->lines[instruction];
-    fprintf(stderr, "[line %d] in script\n", line);
+    for (int i = vm.frameCount - 1; i >= 0; i--) {
+        CallFrame* frame = &vm.frames[i];
+        HeapObjFunction* function = frame->function;
+        // -1 because the IP is sitting on the next instruction to be
+        // executed.
+        size_t instruction = frame->ip - function->chunk.code - 1;
+        fprintf(stderr, "[line %d] in ",
+        function->chunk.lines[instruction]);
+        if (function->name == NULL) {
+            fprintf(stderr, "script\n");
+        } else {
+            fprintf(stderr, "%s()\n", function->name->chars);
+        }
+    }
 
     resetStack();
+}
+
+static void defineNative(const char* name, NativeFn function) {
+    pushStack(CREATE_HEAP_OBJ_VAL(copyString(name, (unsigned)strlen(name))));
+    pushStack(CREATE_HEAP_OBJ_VAL(newNative(function)));
+    tableSet(&vm.globals, READ_VALUE_AS_STRING(vm.stack[0]), vm.stack[1]);
+    popStack();
+    popStack();
 }
 
 void initVM() {
@@ -34,6 +59,8 @@ void initVM() {
     vm.objects = NULL;
     initTable(&vm.globals);
     initTable(&vm.interned_strings);
+
+    defineNative("clock", clockNative);
 }
 
 void freeVM() {
@@ -57,9 +84,11 @@ static void concatenate() {
 }
 
 static InterpretResult run() {
-#define READ_BYTE() (*vm.ip++)
-#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-#define READ_SHORT() (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1]))
+    CallFrame* frame = &vm.frames[vm.frameCount - 1];
+
+#define READ_BYTE() (*frame->ip++)
+#define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()])
 #define READ_STRING() READ_VALUE_AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
@@ -83,7 +112,7 @@ static InterpretResult run() {
         }
         printf(" ]");
         printf("\n");
-        disassembleInstruction(vm.chunk, (ChunkIndex)(vm.ip - vm.chunk->code));
+        disassembleInstruction(&frame->function->chunk, (ChunkIndex)(frame->ip - frame->function->chunk.code));
         #endif
 
         OpCode instruction;
@@ -118,13 +147,13 @@ static InterpretResult run() {
 
             case OP_GET_LOCAL: {
                 uint8_t slot = READ_BYTE();
-                pushStack(vm.stack[slot]);
+                pushStack(frame->slots[slot]);
                 break;
             }
 
             case OP_SET_LOCAL: {
                 uint8_t slot = READ_BYTE();
-                vm.stack[slot] = peekStack(0);
+                frame->slots[slot] = peekStack(0);
                 break;
             }
 
@@ -183,21 +212,41 @@ static InterpretResult run() {
             }
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
-                vm.ip += offset;
+                frame->ip += offset;
                 break;
             }
             case OP_JUMP_IF_FALSE: {
                 uint16_t offset = READ_SHORT();
-                if (isFalsey(peekStack(0))) vm.ip += offset;
+                if (isFalsey(peekStack(0))) frame->ip += offset;
                 break;
             }
             case OP_LOOP: {
                 uint16_t offset = READ_SHORT();
-                vm.ip -= offset;
+                frame->ip -= offset;
+                break;
+            }
+            case OP_CALL: {
+                int argCount = READ_BYTE();
+                if (!callValue(peekStack(argCount), argCount)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
             case OP_RETURN: {
-                return INTERPRET_OK;
+                Value result = popStack();
+
+                vm.frameCount--;
+                if (vm.frameCount == 0) {
+                    popStack();
+                    return INTERPRET_OK;
+                }
+
+                vm.stackTop = frame->slots;
+                pushStack(result);
+
+                frame = &vm.frames[vm.frameCount - 1];
+                break;
             }
         }
     }
@@ -210,21 +259,13 @@ static InterpretResult run() {
 }
 
 InterpretResult interpret(const char* source) {
-    Chunk chunk;
-    initChunk(&chunk);
+    HeapObjFunction* function = compile(source);
+    if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
-    if (!compile(source, &chunk)) {
-        freeChunk(&chunk);
-        return INTERPRET_COMPILE_ERROR;
-    }
+    pushStack(CREATE_HEAP_OBJ_VAL(function));
+    callValue(CREATE_HEAP_OBJ_VAL(function), 0);
 
-    vm.chunk = &chunk;
-    vm.ip = vm.chunk->code;
-
-    InterpretResult result = run();
-
-    freeChunk(&chunk);
-    return result;
+    return run();
 }
 
 void pushStack(Value value) {
@@ -238,9 +279,50 @@ Value popStack() {
 }
 
 Value peekStack(int distance) {
-  return vm.stackTop[-1 - distance];
+    return vm.stackTop[-1 - distance];
+}
+
+static bool call(HeapObjFunction* function, int argCount) {
+    if (argCount != function->arity) {
+        runtimeError("Expected %d arguments but got %d.", function->arity, argCount);
+        return false;
+    }
+
+    if (vm.frameCount == FRAMES_MAX) {
+        runtimeError("Stack overflow.");
+        return false;
+    }
+
+    CallFrame* frame = &vm.frames[vm.frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.code;
+
+    frame->slots = vm.stackTop - argCount - 1;
+    return true;
+}
+
+bool callValue(Value callee, int argCount) {
+    if (VALUE_TYPE_IS_HEAP_OBJ(callee)) {
+        switch (GET_TYPE_OF_HEAP_OBJ(callee)) {
+            case HEAP_OBJ_FUNCTION:
+                return call(READ_VALUE_AS_FUNCTION(callee), argCount);
+            case HEAP_OBJ_NATIVE: {
+                NativeFn native = READ_VALUE_AS_NATIVE(callee);
+                Value result = native(argCount, vm.stackTop - argCount);
+                vm.stackTop -= argCount + 1;
+                pushStack(result);
+                return true;
+            }
+            default:
+                // Non-callable object type.
+            break;
+        }
+    }
+
+    runtimeError("Can only call functions and classes.");
+    return false;
 }
 
 bool isFalsey(Value value) {
-  return VALUE_TYPE_IS_NIL(value) || (VALUE_TYPE_IS_BOOL(value) && !READ_VALUE_UNION_AS_BOOL(value));
+    return VALUE_TYPE_IS_NIL(value) || (VALUE_TYPE_IS_BOOL(value) && !READ_VALUE_UNION_AS_BOOL(value));
 }

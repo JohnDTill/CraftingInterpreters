@@ -19,6 +19,21 @@ static HeapObj* allocateObject(size_t size, HeapObjType type) {
     return object;
 }
 
+HeapObjFunction* newFunction() {
+    HeapObjFunction* function = ALLOCATE_OBJ(HeapObjFunction, HEAP_OBJ_FUNCTION);
+
+    function->arity = 0;
+    function->name = NULL;
+    initChunk(&function->chunk);
+    return function;
+}
+
+HeapObjNative* newNative(NativeFn function) {
+    HeapObjNative* native = ALLOCATE_OBJ(HeapObjNative, HEAP_OBJ_NATIVE);
+    native->function = function;
+    return native;
+}
+
 static HeapObjString* allocateString(char* chars, unsigned length, uint32_t hash) {
     HeapObjString* string = ALLOCATE_OBJ(HeapObjString, HEAP_OBJ_STRING);
     string->length = length;
@@ -65,10 +80,28 @@ HeapObjString* copyString(const char* chars, unsigned length) {
     return allocateString(heapChars, length, hash);
 }
 
+static void printFunction(HeapObjFunction* function) {
+    if (function->name == NULL) {
+        printf("<script>");
+        return;
+    }
+    printf("<fn %s>", function->name->chars);
+}
+
 void printObject(Value value) {
     switch (GET_TYPE_OF_HEAP_OBJ(value)) {
+        case HEAP_OBJ_FUNCTION:
+            printFunction(READ_VALUE_AS_FUNCTION(value));
+            break;
+        case HEAP_OBJ_NATIVE:
+            printf("<native fn>");
+            break;
         case HEAP_OBJ_STRING:
             printf("%s", READ_VALUE_AS_CSTRING(value));
             break;
     }
+}
+
+bool isObjType(Value value, HeapObjType type) {
+    return VALUE_TYPE_IS_HEAP_OBJ(value) && GET_TYPE_OF_HEAP_OBJ(value) == type;
 }

@@ -15,6 +15,15 @@ void* reallocate(void* previous, size_t oldSize, size_t newSize) {
 
 static void freeObject(HeapObj* object) {
     switch (object->type) {
+        case HEAP_OBJ_FUNCTION: {
+            HeapObjFunction* function = (HeapObjFunction*)object;
+            freeChunk(&function->chunk);
+            FREE(HeapObjFunction, object);
+            break;
+        }
+        case HEAP_OBJ_NATIVE:
+            FREE(HeapObjNative, object);
+            break;
         case HEAP_OBJ_STRING: {
             HeapObjString* string = (HeapObjString*)object;
             FREE_ARRAY(char, string->chars, (unsigned)string->length + 1);
