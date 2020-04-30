@@ -10,7 +10,7 @@
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
 typedef struct {
-    HeapObjFunction* function;
+    HeapObjClosure* closure;
     uint8_t* ip;
     Value* slots;
 } CallFrame;
@@ -22,6 +22,7 @@ typedef struct {
     Value* stackTop; //Address past last element
     HashTable globals;
     HashTable interned_strings;
+    ObjUpvalue* openUpvalues;
 
     HeapObj* objects; //Pointer to head of linked list for memory management
 } VM;
@@ -41,6 +42,8 @@ void pushStack(Value value);
 Value popStack(void);
 Value peekStack(int distance);
 bool callValue(Value callee, int argCount);
+ObjUpvalue* captureUpvalue(Value* local);
+void closeUpvalues(Value* last);
 bool isFalsey(Value value);
 
 #endif

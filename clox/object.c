@@ -19,10 +19,24 @@ static HeapObj* allocateObject(size_t size, HeapObjType type) {
     return object;
 }
 
+HeapObjClosure* newClosure(HeapObjFunction* function) {
+    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
+    for (int i = 0; i < function->upvalueCount; i++) {
+        upvalues[i] = NULL;
+    }
+
+    HeapObjClosure* closure = ALLOCATE_OBJ(HeapObjClosure, HEAP_OBJ_CLOSURE);
+    closure->function = function;
+    closure->upvalues = upvalues;
+    closure->upvalueCount = function->upvalueCount;
+    return closure;
+}
+
 HeapObjFunction* newFunction() {
     HeapObjFunction* function = ALLOCATE_OBJ(HeapObjFunction, HEAP_OBJ_FUNCTION);
 
     function->arity = 0;
+    function->upvalueCount = 0;
     function->name = NULL;
     initChunk(&function->chunk);
     return function;
@@ -80,6 +94,14 @@ HeapObjString* copyString(const char* chars, unsigned length) {
     return allocateString(heapChars, length, hash);
 }
 
+ObjUpvalue* newUpvalue(Value* slot) {
+    ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, HEAP_OBJ_UPVALUE);
+    upvalue->closed = CREATE_NIL_VAL;
+    upvalue->location = slot;
+    upvalue->next = NULL;
+    return upvalue;
+}
+
 static void printFunction(HeapObjFunction* function) {
     if (function->name == NULL) {
         printf("<script>");
@@ -90,6 +112,9 @@ static void printFunction(HeapObjFunction* function) {
 
 void printObject(Value value) {
     switch (GET_TYPE_OF_HEAP_OBJ(value)) {
+        case HEAP_OBJ_CLOSURE:
+            printFunction(READ_VALUE_AS_CLOSURE(value)->function);
+            break;
         case HEAP_OBJ_FUNCTION:
             printFunction(READ_VALUE_AS_FUNCTION(value));
             break;
@@ -98,6 +123,9 @@ void printObject(Value value) {
             break;
         case HEAP_OBJ_STRING:
             printf("%s", READ_VALUE_AS_CSTRING(value));
+            break;
+        case HEAP_OBJ_UPVALUE:
+            printf("upvalue");
             break;
     }
 }

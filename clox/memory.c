@@ -15,6 +15,12 @@ void* reallocate(void* previous, size_t oldSize, size_t newSize) {
 
 static void freeObject(HeapObj* object) {
     switch (object->type) {
+        case HEAP_OBJ_CLOSURE: {
+            HeapObjClosure* closure = (HeapObjClosure*)object;
+            FREE_ARRAY(ObjUpvalue*, closure->upvalues, closure->upvalueCount);
+            FREE(HeapObjClosure, object);
+            break;
+        }
         case HEAP_OBJ_FUNCTION: {
             HeapObjFunction* function = (HeapObjFunction*)object;
             freeChunk(&function->chunk);
@@ -30,6 +36,9 @@ static void freeObject(HeapObj* object) {
             FREE(HeapObjString, object);
             break;
         }
+        case HEAP_OBJ_UPVALUE:
+            FREE(ObjUpvalue, object);
+            break;
     }
 }
 

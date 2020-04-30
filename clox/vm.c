@@ -19,6 +19,7 @@ static Value clockNative(int argCount, Value* args) {
 static void resetStack() {
     vm.stackTop = vm.stack;
     vm.frameCount = 0;
+    vm.openUpvalues = NULL;
 }
 
 static void runtimeError(const char* format, ...) {
@@ -30,7 +31,7 @@ static void runtimeError(const char* format, ...) {
 
     for (int i = vm.frameCount - 1; i >= 0; i--) {
         CallFrame* frame = &vm.frames[i];
-        HeapObjFunction* function = frame->function;
+        HeapObjFunction* function = frame->closure->function;
         // -1 because the IP is sitting on the next instruction to be
         // executed.
         size_t instruction = frame->ip - function->chunk.code - 1;
@@ -88,7 +89,7 @@ static InterpretResult run() {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()])
+#define READ_CONSTANT() (frame->closure->function->chunk.constants.values[READ_BYTE()])
 #define READ_STRING() READ_VALUE_AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
@@ -112,7 +113,8 @@ static InterpretResult run() {
         }
         printf(" ]");
         printf("\n");
-        disassembleInstruction(&frame->function->chunk, (ChunkIndex)(frame->ip - frame->function->chunk.code));
+        disassembleInstruction(&frame->closure->function->chunk,
+                               (ChunkIndex)(frame->ip - frame->closure->function->chunk.code));
         #endif
 
         OpCode instruction;
@@ -133,6 +135,18 @@ static InterpretResult run() {
                     runtimeError("Undefined variable '%s'.", name->chars);
                     return INTERPRET_RUNTIME_ERROR;
                 }
+                break;
+            }
+
+            case OP_GET_UPVALUE: {
+                uint8_t slot = READ_BYTE();
+                pushStack(*frame->closure->upvalues[slot]->location);
+                break;
+            }
+
+            case OP_SET_UPVALUE: {
+                uint8_t slot = READ_BYTE();
+                *frame->closure->upvalues[slot]->location = peekStack(0);
                 break;
             }
 
@@ -233,8 +247,29 @@ static InterpretResult run() {
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
+            case OP_CLOSURE: {
+                HeapObjFunction* function = READ_VALUE_AS_FUNCTION(READ_CONSTANT());
+                HeapObjClosure* closure = newClosure(function);
+                pushStack(CREATE_HEAP_OBJ_VAL(closure));
+                for (int i = 0; i < closure->upvalueCount; i++) {
+                    uint8_t isLocal = READ_BYTE();
+                    uint8_t index = READ_BYTE();
+                    if (isLocal) {
+                        closure->upvalues[i] = captureUpvalue(frame->slots + index);
+                    } else {
+                        closure->upvalues[i] = frame->closure->upvalues[index];
+                    }
+                }
+                break;
+            }
+            case OP_CLOSE_UPVALUE:
+                 closeUpvalues(vm.stackTop - 1);
+                 popStack();
+                 break;
             case OP_RETURN: {
                 Value result = popStack();
+
+                closeUpvalues(frame->slots);
 
                 vm.frameCount--;
                 if (vm.frameCount == 0) {
@@ -263,7 +298,10 @@ InterpretResult interpret(const char* source) {
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
     pushStack(CREATE_HEAP_OBJ_VAL(function));
-    callValue(CREATE_HEAP_OBJ_VAL(function), 0);
+    HeapObjClosure* closure = newClosure(function);
+    popStack();
+    pushStack(CREATE_HEAP_OBJ_VAL(closure));
+    callValue(CREATE_HEAP_OBJ_VAL(closure), 0);
 
     return run();
 }
@@ -282,9 +320,9 @@ Value peekStack(int distance) {
     return vm.stackTop[-1 - distance];
 }
 
-static bool call(HeapObjFunction* function, int argCount) {
-    if (argCount != function->arity) {
-        runtimeError("Expected %d arguments but got %d.", function->arity, argCount);
+static bool call(HeapObjClosure* closure, int argCount) {
+    if (argCount != closure->function->arity) {
+        runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
         return false;
     }
 
@@ -294,8 +332,8 @@ static bool call(HeapObjFunction* function, int argCount) {
     }
 
     CallFrame* frame = &vm.frames[vm.frameCount++];
-    frame->function = function;
-    frame->ip = function->chunk.code;
+    frame->closure = closure;
+    frame->ip = closure->function->chunk.code;
 
     frame->slots = vm.stackTop - argCount - 1;
     return true;
@@ -304,8 +342,8 @@ static bool call(HeapObjFunction* function, int argCount) {
 bool callValue(Value callee, int argCount) {
     if (VALUE_TYPE_IS_HEAP_OBJ(callee)) {
         switch (GET_TYPE_OF_HEAP_OBJ(callee)) {
-            case HEAP_OBJ_FUNCTION:
-                return call(READ_VALUE_AS_FUNCTION(callee), argCount);
+            case HEAP_OBJ_CLOSURE:
+                return call(READ_VALUE_AS_CLOSURE(callee), argCount);
             case HEAP_OBJ_NATIVE: {
                 NativeFn native = READ_VALUE_AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
@@ -321,6 +359,38 @@ bool callValue(Value callee, int argCount) {
 
     runtimeError("Can only call functions and classes.");
     return false;
+}
+
+ObjUpvalue* captureUpvalue(Value* local) {
+    ObjUpvalue* prevUpvalue = NULL;
+    ObjUpvalue* upvalue = vm.openUpvalues;
+
+    while (upvalue != NULL && upvalue->location > local) {
+        prevUpvalue = upvalue;
+        upvalue = upvalue->next;
+    }
+
+    if (upvalue != NULL && upvalue->location == local) return upvalue;
+
+    ObjUpvalue* createdUpvalue = newUpvalue(local);
+    createdUpvalue->next = upvalue;
+
+    if (prevUpvalue == NULL) {
+        vm.openUpvalues = createdUpvalue;
+    } else {
+        prevUpvalue->next = createdUpvalue;
+    }
+
+    return createdUpvalue;
+}
+
+void closeUpvalues(Value* last) {
+    while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
+        ObjUpvalue* upvalue = vm.openUpvalues;
+        upvalue->closed = *upvalue->location;
+        upvalue->location = &upvalue->closed;
+        vm.openUpvalues = upvalue->next;
+    }
 }
 
 bool isFalsey(Value value) {
